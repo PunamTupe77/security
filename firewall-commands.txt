@@ -1,0 +1,56 @@
+# Start firewalld service
+systemctl start firewalld
+systemctl status firewalld
+
+# Get the list of available zones
+firewall-cmd --get-zones
+
+# Get the default zone
+firewall-cmd --get-default-zone
+
+# List rules for the default zone
+firewall-cmd --list-all
+
+# View rules for a specific zone (e.g., dmz)
+firewall-cmd --zone=dmz --list-all
+
+# Change interface to the dmz zone temporarily (runtime)
+firewall-cmd --zone=dmz --change-interface=ens33
+firewall-cmd --zone=dmz --add-interface=ens33
+
+# Verify the change
+firewall-cmd --zone=public --list-all
+firewall-cmd --zone=dmz --list-all
+
+# Reload firewalld (to revert runtime changes)
+firewall-cmd --reload
+
+# Make interface change permanent
+firewall-cmd --zone=dmz --change-interface=ens160 --permanent
+firewall-cmd --reload
+
+# Get all available services
+firewall-cmd --get-services
+
+# Remove SSH service from the public zone
+firewall-cmd --zone=public --remove-service=ssh --permanent
+firewall-cmd --reload
+firewall-cmd --zone=public --list-all
+
+# Add SSH service to the public zone
+firewall-cmd --zone=public --add-service=ssh --permanent
+firewall-cmd --reload
+firewall-cmd --zone=public --list-all
+
+# Remove a port (e.g., 8080/tcp) from the public zone
+firewall-cmd --zone=public --remove-port=8080/tcp
+firewall-cmd --reload
+firewall-cmd --zone=public --list-all
+
+# Add a port (e.g., 2020/tcp) to the public zone
+firewall-cmd --zone=public --add-port=2020/tcp --permanent
+firewall-cmd --reload
+
+
+
+firewall-cmd --zone=public --list-all

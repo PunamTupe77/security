@@ -1,0 +1,42 @@
+# 1. Start the firewalld service (if not already running)
+systemctl start firewalld
+systemctl status firewalld
+
+# 2. Check the default zone
+firewall-cmd --get-default-zone
+
+# 3. List current rules for the default zone
+firewall-cmd --zone=public --list-all
+
+# 4. Add a rich rule (allow HTTP from a specific IP)
+firewall-cmd --zone=public --add-rich-rule='rule family="ipv4" source address="192.168.1.100" port port="80" protocol="tcp" accept' --permanent
+
+# 5. Add a rich rule (deny all traffic from a specific IP)
+firewall-cmd --zone=public --add-rich-rule='rule family="ipv4" source address="192.168.1.100" drop' --permanent
+
+# 6. Add a rich rule (allow SSH from a specific subnet)
+firewall-cmd --zone=public --add-rich-rule='rule family="ipv4" source address="192.168.1.0/24" service name="ssh" accept' --permanent
+
+# 7. Add a rich rule (reject traffic from a specific IP and log the attempt)
+firewall-cmd --zone=public --add-rich-rule='rule family="ipv4" source address="192.168.1.200" reject log prefix="Rejected IP" level="info"' --permanent
+
+# 8. Reload the firewall to apply changes
+firewall-cmd --reload
+
+# 9. Verify the rich rules in the public zone
+firewall-cmd --zone=public --list-all
+
+# 10. Remove a rich rule (remove allow HTTP from specific IP)
+firewall-cmd --zone=public --remove-rich-rule='rule family="ipv4" source address="192.168.1.100" port port="80" protocol="tcp" accept' --permanent
+
+# 11. Remove a rich rule (remove deny all from specific IP)
+firewall-cmd --zone=public --remove-rich-rule='rule family="ipv4" source address="192.168.1.100" drop' --permanent
+
+# 12. Remove a rich rule (remove allow SSH from subnet)
+firewall-cmd --zone=public --remove-rich-rule='rule family="ipv4" source address="192.168.1.0/24" service name="ssh" accept' --permanent
+
+# 13. Reload the firewall to apply removal of rich rules
+firewall-cmd --reload
+
+# 14. Verify that the rules have been removed
+firewall-cmd --zone=public --list-all

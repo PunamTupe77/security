@@ -1,0 +1,142 @@
+# 1. Install Squid
+# For RHEL/CentOS
+yum install squid -y
+
+# For Debian/Ubuntu
+apt install squid -y
+
+# 2. Start and enable Squid service
+systemctl start squid
+systemctl enable squid
+
+# 3. Check Squid status
+systemctl status squid
+
+# 4. Verify Squid configuration syntax
+squid -k check | echo $?
+
+# 5. Open port 3128 in the firewall
+firewall-cmd --zone=public --add-service=squid --permanent
+firewall-cmd --reload
+
+# 6. Edit Squid configuration file
+vim /etc/squid/squid.conf
+
+# 7. Test configuration file syntax
+squid -k parse
+
+# 8. View Squid logs and cache directory
+ls /var/log/squid
+ls /var/spool/squid
+
+# 9. Restart or reload Squid service
+systemctl restart squid
+systemctl reload squid
+
+# 10. Reload configuration without restarting
+squid -k reconfigure
+
+# 11. Example configuration rules to add in /etc/squid/squid.conf
+
+# Allow access to a specific subnet
+acl internet_allow src 192.168.206.0/24
+http_access allow internet_allow
+
+# Block access for a specific range of IPs
+acl banned1 src 172.18.90.100-109
+http_access deny banned1
+
+# Allow replies to all clients
+http_reply_access allow all
+
+---------------------------------------------------------------------------
+
+DAY-2
+'''''
+
+
+# 1. Open the Squid configuration file for editing
+vim /etc/squid/squid.conf
+
+# 2. Block specific domains (e.g., facebook.com and youtube.com)
+# Add the following lines to /etc/squid/squid.conf
+acl blocksite1 dstdomain .facebook.com .youtube.com
+http_access deny blocksite1
+
+# 3. Block specific URLs using a regular expression
+# To block a part of the URI, add this line to /etc/squid/squid.conf
+acl banned_reddit url_regex ^http://.*reddit.com/.*$
+http_access deny banned_reddit
+
+# 4. Block a list of domains stored in an external file
+# Create a file with the list of blocked sites
+cat > /etc/squid/blockedsites.squid <<EOF
+.tesla.com
+.gmail.com
+.cdac.in
+EOF
+
+# Edit the Squid configuration file again to include this list
+vim /etc/squid/squid.conf
+
+# Add the following lines to /etc/squid/squid.conf
+acl blocksites dstdomain "/etc/squid/blockedsites.squid"
+http_access deny blocksites
+
+# OR use url_regex if you want to match URLs with a pattern
+acl blocksites url_regex "/etc/squid/blockedsites.squid"
+http_access deny blocksites
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+Explanation:
+''''''''''''
+- acl blocksite1 dstdomain .facebook.com .youtube.com: Defines an access control list (ACL) that matches traffic destined for facebook.com and youtube.com.
+- http_access deny blocksite1: Denies access to the sites defined in blocksite1.
+- acl banned_reddit url_regex ^http://.*reddit.com/.*$: Matches any URLs containing reddit.com.
+- cat > /etc/squid/blockedsites.squid: Creates a file with the blocked domains.
+- acl blocksites dstdomain "/etc/squid/blockedsites.squid": Matches traffic destined for domains in the blockedsites.squid file.
+- http_access deny blocksites: Denies access to all domains listed in blockedsites.squid.
+
+--------------------------------------------------------------------------------------------------------------------
+
+
+
+DAY-3
+''''''
+
+
+# 1. Test Squid proxy functionality using curl
+curl -x squid-proxy-server-IP:3128 http://google.com -I
+
+# 2. Explanation of headers in the output:
+# - X-Cache: Indicates if the requested document was cached (HIT) or not (MISS).
+# - X-Cache-Lookup: Shows the cache lookup result from the originating web server.
+# - Via: Displays the HTTP version, the name of the proxy, and Squid version.
+
+# 3. Open Squid configuration file for editing
+vim /etc/squid/squid.conf
+
+# 4. Add the following configuration to the end of the file to manage the headers:
+forwarded_for delete
+via off
+
+# 5. Save and exit the configuration file (in vim: press `Esc`, then type `:wq` and press `Enter`).
+
+# 6. Apply the new configuration without restarting the Squid service:
+squid -k reconfigure
+
+# 7. Verify the Squid service is running correctly:
+systemctl status squid
+
+# 8. Check the Squid configuration syntax before reloading (optional but recommended):
+squid -k parse
+
+# 9. View Squid logs to monitor activity (optional):
+ls /var/log/squid
+
+# 10. Check Squid's cache directory (optional):
+ls /var/spool/squid
+
+# 11. Restart or reload the Squid service if needed (optional):
+systemctl restart squid
+systemctl reload squid

@@ -1,0 +1,14 @@
+# install nmap in client machine 
+1)sudo apt install nmap -y
+
+# for scan port 80,22,9090
+  -sT: TCP connect scan.
+  -pn: Skip host discovery.
+  -p 80,9090,22: Scan ports 80, 9090, and 22.
+  --reason: Show why each port is open/closed.
+2) nmap -sT -pn 192.168.57.4 -p 80,9090,22 --reason
+
+
+3) nmap -sS -pn 192.168.57.4 -p 80,9090,22 --reason
+# this is half scan not perform 3-way handshake 
+  --sS: SYN connect scan
